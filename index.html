@@ -23,9 +23,9 @@
 				if (e.key == "Enter" && e.shiftKey == false && e.ctrlKey == false && e.altKey == false) {
 					e.preventDefault();
 					if (this == document.querySelector(".limp--input-limp")) {
-						eval(`limp(${this.value})`);
+						eval(`limp(\`${this.value}\`)`);
 					} else {
-						console.log(eval(this.value));
+						eval(this.value);
 					}
 				}
 			});
