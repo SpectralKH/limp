@@ -1,0 +1,60 @@
+@import "variables.sass"
+
+body
+	margin: 40px
+	background-color: $bg-3
+	color: $white
+
+.limp--log
+	width: 100%
+	height: 300px
+	overflow: scroll
+	max-height: 100%
+	background-color: $bg-4
+	box-shadow: $shadow-3
+	tab-size: 4
+	.limp--item
+		$margin: 20px
+		font-size: 14px
+		font-family: monospace
+		margin-left: $margin
+		margin-right: $margin
+		&:first-child
+			margin-top: $margin
+		&:last-child
+			margin-bottom: $margin
+		.limp--label
+			display: inline-block
+			border-radius: 2px
+			padding: 2px
+			margin: 2px
+		.limp--label-err
+			background-color: $red
+		.limp--label-log
+			background-color: $bg-5
+		.limp--msg
+			margin: 0px
+			display: inline
+			white-space: pre-wrap
+
+.limp--input
+	margin-top: 25px
+	display: flex
+	justify-content: space-between
+	textarea
+		$margin: 10px
+		border: none
+		color: $white
+		outline: none
+		box-shadow: $shadow-3
+		width: 100%
+		padding: $margin
+		background-color: $bg-4
+		font-size: 14px
+		font-family: monospace
+		resize: none
+		overflow: hidden
+		box-sizing: border-box
+	.limp--input-limp
+		margin-right: 25px
+	.limp--input-js

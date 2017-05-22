@@ -5,3 +5,4 @@ limp(`
 		hey = bruh;()()
 	}
 `);
+limp();

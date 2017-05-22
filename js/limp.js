@@ -1,27 +1,42 @@
 "use strict";
-function limp(script) {
+var limpErrors = {
+	"u01": "Invalid JavaScript data type passed to limp(). Expected string, number or boolean."
+}
 
-	console.log(script.toString());
-	switch (typeof script) {
-		default: // string, number, boolean
-			script = script.toString().trim();
-			console.log("TYPE: 1string, 2number or 3boolean");
-			break;
-		case "null":
-			console.log("TYPE: 4null");
-			break;
-		case "undefined":
-			console.log("TYPE: 5undefined");
-			break;
-		case "function":
-			console.log("TYPE: 6function");
-			break;
-		case "object":
-			console.log("TYPE: 7object");
-			break;
+// console.error(message);
+// console.log(message);
+// console.warn(message);
+// console.info(message);
+
+function limpLogger(type, msg) {
+	var html = document.createElement("div");
+	var attr = document.createAttribute("class");
+	attr.value = "limp--item";
+	html.setAttributeNode(attr);
+	html.innerHTML = `<div class="limp--label limp--label-${type}">${type}</div>
+	<p class="limp--msg">${msg}</p>`
+	document.querySelector(".limp--log").appendChild(html);
+
+	if (type == "err") {
+		console.error("[limp] "+msg);
+	} else if (type == "log") {
+		console.log("[limp] "+msg);
+	}
+}
+
+function limp(script) {
+	function limpError(code) {
+		limpLogger("err", code+": "+limpErrors[code]);
+	}
+	function limpLog(msg) {
+		limpLogger("log", msg);
 	}
 
-	return "Limp done";
+	if (typeof script !== "string" && typeof script != "number" && typeof script != "boolean") { // if script is not str/num/bool
+		return limpError("u01");
+	} // continue if script is is str/num/bool
+	script = script.toString().trim();
+	limpLog(script);
 }
 
 function limpLexer(text) {
