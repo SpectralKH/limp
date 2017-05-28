@@ -1,13 +1,7 @@
 "use strict";
 var limpErrors = {
-	"u01": "Invalid JavaScript data type passed to limp(). Expected string.",
-	"u02": "Invalid JavaScript data type passed to limp(). Expected string."
+	"u01": "Invalid JavaScript data type passed to limp(). Expected string."
 }
-
-// console.error(message);
-// console.log(message);
-// console.warn(message);
-// console.info(message);
 
 function limpLog(type, msg) {
 	var html = document.createElement("div");
@@ -25,66 +19,70 @@ function limpLog(type, msg) {
 	}
 }
 
+function wordType(word) {
+	var type;
+	if ( /(^\d*$|^\d*\.\d+$)/.test(word) ) { // NUMBER, digit OR optional digit . digit
+		type = "number";
+	} else if (word == "true" || word == "false") { // BOOLEAN
+		type = "boolean";
+	} else if ( /^".*"$/.test(word) ) { // STRING, starts & ends with "
+		type = "string";
+	} else if ( /^[+\-*/%]$|^[+-]{2}$/.test(word) ) { // OPERATOR, + - * % ++ --
+		type = "operator";
+	} else if ( /^\$.*/.test(word) ) {
+		type = "variable";
+	} else { // OTHER
+		type = "instruction";
+	}
+	return type;
+}
+
 function limp(script) {
 	var words = script.trim().match( /[^\s"]+|"[^"]*"/g ); // trim & split into array where there is whitespace, except in quotes
 
-	var currentWord, currentType, wordsType = [];
+	var currentWord, currentType;
 	for (var wordIndex = 0; wordIndex < words.length; wordIndex++) { // loop through words array
 		currentWord = words[wordIndex];
-	// IF NUMBER
-		if (/(^\d*$|^\d*\.\d+$)/.test(currentWord)) {
-
-			limpLog("inf", "[numb] "+currentWord);
-			currentType = wordsType[wordIndex];
-
-	// IF BOOLEAN
-		} else if (currentWord == "true" || currentWord == "false") {
-
-			limpLog("inf", "[bool] "+currentWord);
-
-	// IF STRING (starts & ends with ")
-		} else if ( /^".*"$/.test(currentWord) ) {
-
-			limpLog("inf", "[strn] "+currentWord);
-
-	// IF OPERATOR (+ - * / % ++ --)
-		} else if ( /^[+\-*/%]$|^[+-]{2}$/.test(currentWord) ) {
-
-			switch (currentWord) {
-				case "+":
-					limpLog("inf", parseFloat(words[wordIndex-1])+parseFloat(words[wordIndex+1]))
-					break;
-				case "-":
-					limpLog("inf", parseFloat(words[wordIndex-1])-parseFloat(words[wordIndex+1]))
-					break;
-				case "*":
-					limpLog("inf", parseFloat(words[wordIndex-1])*parseFloat(words[wordIndex+1]))
-					break;
-				case "/":
-					limpLog("inf", parseFloat(words[wordIndex-1])/parseFloat(words[wordIndex+1]))
-					break;
-				case "%":
-					limpLog("inf", parseFloat(words[wordIndex-1])%parseFloat(words[wordIndex+1]))
-					break;
-				case "++":
-					limpLog("inf", parseFloat(words[wordIndex-1])+1)
-					break;
-				case "--":
-					limpLog("inf", parseFloat(words[wordIndex-1])-1)
-					break;
-			}
-
-			if (currentWord == "+") {
-
-			}
-
-			limpLog("inf", "[oprt] "+currentWord);
-
-	// IF INSTRUCTION
-		} else {
-
-			limpLog("inf", "[inst] "+currentWord);
-
+		currentType = wordType(currentWord);
+		limpLog("inf", "["+currentType+"]		"+currentWord);
+		switch (currentType) {
+			case "number":
+				// do code...
+				break;
+			case "boolean":
+				// do code...
+				break;
+			case "string":
+				// do code...
+				break;
+			case "operator":
+				switch (currentWord) {
+					case "+":
+						limpLog("inf", words[wordIndex-1]+words[wordIndex+1]);
+						break;
+					case "-":
+						limpLog("inf", words[wordIndex-1]-words[wordIndex+1]);
+						break;
+					case "*":
+						limpLog("inf", words[wordIndex-1]*words[wordIndex+1]);
+						break;
+					case "/":
+						limpLog("inf", words[wordIndex-1]/words[wordIndex+1]);
+						break;
+					case "%":
+						limpLog("inf", words[wordIndex-1]%words[wordIndex+1]);
+						break;
+					case "++":
+						limpLog("inf", words[wordIndex-1]+1);
+						break;
+					case "--":
+						limpLog("inf", words[wordIndex-1]-1);
+						break;
+				}
+				break;
+			case "instruction":
+				// do code...
+				break;
 		}
 	}
 
@@ -98,43 +96,3 @@ function limp(script) {
 
 
 }
-
-
-
-
-// 	// { SETUP
-// 		function limpError(code) {
-// 			limpLogger("err", code+": "+limpErrors[code]);
-// 		}
-// 		function limpLog(msg) {
-// 			// limpLogger("log", msg);
-// 		}
-// 	// }
-// 	// { VALIDATE LIMP INPUT
-// 		if (typeof script !== "string") return limpError("u01"); // error if not string
-// 		if (script.trim() == "") return limpError("u02"); // error if empty
-// 		limpLog(script);
-//
-//
-// 	// }
-// 	// { LEXER
-// 		var words = script.split(/\s+/);
-// 		var wordIndex = 0;
-// 		limp.nextWord = function() {
-// 			if (wordIndex >= words.length) {
-// 				console.log(null);
-// 			} else {
-// 				return words[next++];
-// 			}
-// 			if (wordIndex >= words.length) return null;
-// 			return words[wordIndex++];
-// 		}
-//
-// 		var dictionary = {};
-// 		limp.stack = [];
-// 		limp.addWords = function (new_dict) {
-// 			for (var word in new_dict)
-// 				dictionary[word.toUpperCase()] = new_dict[word];
-// 		};
-// 	// }
-// }
