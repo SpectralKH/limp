@@ -58,19 +58,15 @@ function limp(script) {
 			case "operator":
 				switch (currentWord) {
 					case "+":
-						limpLog("inf", words[wordIndex-1]+words[wordIndex+1]);
-						break;
 					case "-":
-						limpLog("inf", words[wordIndex-1]-words[wordIndex+1]);
-						break;
 					case "*":
-						limpLog("inf", words[wordIndex-1]*words[wordIndex+1]);
-						break;
 					case "/":
-						limpLog("inf", words[wordIndex-1]/words[wordIndex+1]);
-						break;
 					case "%":
-						limpLog("inf", words[wordIndex-1]%words[wordIndex+1]);
+						if ( wordType(words[wordIndex-1]) == "number" && wordType(words[wordIndex+1]) == "number" ) {
+							limpLog("inf", eval(words[wordIndex-1]+currentWord+words[wordIndex+1]));
+						} else {
+							limpLog("err", "not number");
+						}
 						break;
 					case "++":
 						limpLog("inf", words[wordIndex-1]+1);
@@ -79,6 +75,9 @@ function limp(script) {
 						limpLog("inf", words[wordIndex-1]-1);
 						break;
 				}
+				break;
+			case "variable":
+				// do code...
 				break;
 			case "instruction":
 				// do code...
