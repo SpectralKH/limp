@@ -17,7 +17,6 @@
 			$("body").on("input", ".limp--input textarea", function() {
 				var offset = this.offsetHeight - this.clientHeight;
 				$(this).css("height", "auto").css("height", this.scrollHeight + offset);
-				$(".limp--log").css("height", "calc(100% - xpx - "+$(this).height()+"px"); // 100% - 40px - 36px - 20px - 40px
 				$(".limp--log").css("height", "calc(100% - 120px - "+$(this).height()+"px)"); // 100% - 40px - 36px - 20px - 40px
 			});
 			$("body").on("keypress", ".limp--input textarea", function(e) {
@@ -30,6 +29,7 @@
 						eval(this.value);
 						this.value = "";
 					}
+					$(".limp--input textarea").trigger("input");
 				}
 			});
 			</script>

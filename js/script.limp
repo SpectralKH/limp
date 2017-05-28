@@ -1,8 +1,3 @@
 limp(`
-	var x = "hey";
-	function doshit(x) {
-		hey = bruh;()()
-		hey = bruh;()()
-	}
+	1 * 2
 `);
-limp();

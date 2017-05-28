@@ -34,8 +34,8 @@ body
 			margin: 2px
 		.limp--label-err
 			background-color: $red
-		.limp--label-log
-			background-color: $bg-5
+		.limp--label-inf
+			background-color: $bg-6
 		.limp--msg
 			margin: 0px
 			display: inline
@@ -62,7 +62,11 @@ body
 		resize: none
 		overflow: hidden
 		box-sizing: border-box
-		margin: 0px 20px
+		margin: 0px 10px
+		transition: background-color $transition, box-shadow $transition
+		&:focus, &:active
+			background-color: $bg-5
+			box-shadow: $shadow-4
 	.limp--input-limp
 		margin-left: 40px
 	.limp--input-js
