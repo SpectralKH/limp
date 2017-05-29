@@ -1,7 +1,7 @@
 "use strict";
-var limpErrors = {
-	"u01": "Invalid JavaScript data type passed to limp(). Expected string."
-}
+// var limpErrors = {
+// 	"u01": "Invalid JavaScript data type passed to limp(). Expected string."
+// }
 
 function limpLog(type, msg) {
 	var html = document.createElement("div");
@@ -19,79 +19,66 @@ function limpLog(type, msg) {
 	}
 }
 
-function wordType(word) {
-	var type;
-	if ( /(^\d*$|^\d*\.\d+$)/.test(word) ) { // NUMBER, digit OR optional digit . digit
-		type = "number";
-	} else if (word == "true" || word == "false") { // BOOLEAN
-		type = "boolean";
-	} else if ( /^".*"$/.test(word) ) { // STRING, starts & ends with "
-		type = "string";
-	} else if ( /^[+\-*/%]$|^[+-]{2}$/.test(word) ) { // OPERATOR, + - * % ++ --
-		type = "operator";
-	} else if ( /^\$.*/.test(word) ) {
-		type = "variable";
-	} else { // OTHER
-		type = "instruction";
+function limp(input) {
+	var pos = 0, line = 1, col = 0;
+
+	function currentChar(offset = 0) {
+		return input.charAt(pos+offset);
 	}
-	return type;
-}
 
-function limp(script) {
-	var words = script.trim().match( /[^\s"]+|"[^"]*"/g ); // trim & split into array where there is whitespace, except in quotes
+	function jumpChar(offset = 1) {
+		pos = pos+offset;
+	}
 
-	var currentWord, currentType;
-	for (var wordIndex = 0; wordIndex < words.length; wordIndex++) { // loop through words array
-		currentWord = words[wordIndex];
-		currentType = wordType(currentWord);
-		limpLog("inf", "["+currentType+"]		"+currentWord);
-		switch (currentType) {
-			case "number":
-				// do code...
-				break;
-			case "boolean":
-				// do code...
-				break;
-			case "string":
-				// do code...
-				break;
-			case "operator":
-				switch (currentWord) {
-					case "+":
-					case "-":
-					case "*":
-					case "/":
-					case "%":
-						if ( wordType(words[wordIndex-1]) == "number" && wordType(words[wordIndex+1]) == "number" ) {
-							limpLog("inf", eval(words[wordIndex-1]+currentWord+words[wordIndex+1]));
-						} else {
-							limpLog("err", "not number");
-						}
-						break;
-					case "++":
-						limpLog("inf", words[wordIndex-1]+1);
-						break;
-					case "--":
-						limpLog("inf", words[wordIndex-1]-1);
-						break;
-				}
-				break;
-			case "variable":
-				// do code...
-				break;
-			case "instruction":
-				// do code...
-				break;
+	function jumpLine() {
+		var nextNewline = input.indexOf("\n", currentChar());
+		pos = nextNewline+1;
+	}
+
+	function isWhitespace(char) {
+		return /^\s*$/.test(char);
+	}
+
+	function isDigit(char) {
+		return /[0-9]/.test(char);
+	}
+
+	function readNumber() {
+		var keepRunning = true, firstPeriod = true, number = "";
+		while (keepRunning == true) {
+			keepRunning = false;
+			if ( isDigit(currentChar()) ) {
+				keepRunning = true;
+			} else if ( currentChar() == "." && firstPeriod == true && isDigit(currentChar(1)) ) {
+				keepRunning = true;
+				firstPeriod = false;
+			}
+			if (keepRunning) {
+				number += currentChar();
+				jumpChar(1);
+			} else {
+				jumpChar(-1);
+			}
+		}
+		return number;
+	}
+
+	function readNext() {
+		if ( isWhitespace(currentChar()) ) {
+			jumpChar();
+			readNext();
+		} else if (currentChar() == "/" && currentChar(1) == "/" ) {
+			jumpLine();
+			readNext();
+		} else if (currentChar() == '"') {
+			readString();
+			jumpChar();
+			readNext();
+		} else if ( isDigit(currentChar()) ) {
+			readNumber();
+			jumpChar();
+			readNext();
 		}
 	}
-
-	var nextWord = function() {
-		if (wordIndex >= words.length) {
-			return null;
-		} else {
-			return words[next++];
-		}
-	}
-
-
+	readNext();
 }
