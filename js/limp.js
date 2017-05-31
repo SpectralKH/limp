@@ -22,122 +22,148 @@ function limpLog(type, msg) {
 function limp(input) {
 	var pos = 0, line = 1, col = 1;
 
-	function currentChar(offset = 0) {
-		return input.charAt(pos+offset);
-	}
+	// CHARACTER CHECK
+		function currentChar(offset = 0) {
+			return input.charAt(pos+offset);
+		}
 
-	function currentCharIsEscaped(offset = 0) {
-		return input.charAt(pos - 1 + offset) == "\\" ? true : false;
-		// Support \\\
-	}
+		function currentCharIsEscaped(offset = 0) {
+			return input.charAt(pos - 1 + offset) == "\\" ? true : false;
+			//  ToDo: Support \\\
+		}
 
 	function endOfInput() {
-		return pos > input.length ? true : false;
+		return pos >= input.length ? true : false;
 	}
 
-	function jumpChar(offset = 1) {
-		pos = pos+offset;
-	}
+	// INPUT NAVIGATION
 
-	function jumpLine() {
-		var nextNewline = input.indexOf("\n", pos);
-		pos = nextNewline+1;
-	}
-
-	function isWhitespace(char) {
-		return /\s/.test(char);
-	}
-
-	function isDigit(char) {
-		return /[0-9]/.test(char);
-	}
-
-	function isOperator(char) {
-		switch (char) {
-			case "+":
-			case "-":
-			case "*":
-			case "/":
-			case "%":
-				// do code
-				break;
-			case "++":
-			case "--":
-				// do code
-				break;
+		function updateCol() {
+			var lastNewline = input.lastIndexOf("\n", pos-1);
+			col = pos-lastNewline;
 		}
-	}
 
-	function readNumber() {
-		var keepRunning = true, firstPeriod = true, number = "";
-		while (keepRunning == true && !endOfInput()) {
-			keepRunning = false;
-			if ( isDigit(currentChar()) ) {
-				keepRunning = true;
-			} else if ( currentChar() == "." && firstPeriod == true && isDigit(currentChar(1)) ) {
-				keepRunning = true;
-				firstPeriod = false;
-			}
-			if (keepRunning) {
-				number += currentChar();
-				jumpChar();
-			} else {
-				jumpChar(-1);
+		function jumpChar(offset = 1) {
+			pos = pos+offset;
+			updateCol();
+		}
+
+		function jumpLine() {
+			var nextNewline = input.indexOf("\n", pos);
+			pos = nextNewline+1;
+			updateCol();
+			line++;
+		}
+
+	// TYPE CHECK
+
+		function isWhitespace(char) {
+			return /\s/.test(char);
+		}
+
+		function isDigit(char) {
+			return /[0-9]/.test(char);
+		}
+
+		function isOperator(char) {
+			switch (char) {
+				case "+":
+				case "-":
+				case "*":
+				case "/":
+				case "%":
+				case "++":
+				case "--":
+					return true;
+					break;
+				default:
+					return false;
 			}
 		}
-		return number;
-	}
 
-	function readString() {
-		var keepRunning = true, string = "", start = true;
-		while (keepRunning == true && !endOfInput()) {
-			console.log("pos"+pos);
-			if (start) {
-				string += currentChar();
-				jumpChar();
-				start = false;
-			} else if (currentChar == '"') {
-				console.log("gothere");
+		function isLetter(char) {
+			return /[A-Za-z]/.test(char);
+		}
+
+	// TYPE READ
+		function readNumber() {
+			var keepRunning = true, firstPeriod = true, number = "";
+			while (keepRunning == true && !endOfInput()) {
 				keepRunning = false;
-			} else {
-				string += currentChar();
-				jumpChar();
+				if ( isDigit(currentChar()) ) {
+					keepRunning = true;
+				} else if ( currentChar() == "." && firstPeriod == true && isDigit(currentChar(1)) ) {
+					keepRunning = true;
+					firstPeriod = false;
+				}
+				if (keepRunning) {
+					number += currentChar();
+					jumpChar();
+				} else {
+					jumpChar(-1);
+				}
 			}
-			start = false;
+			return number;
 		}
-		return string;
-	}
+
+		function readString() {
+			var keepRunning = true, string = "", start = true;
+			while (keepRunning == true && !endOfInput()) {
+				if (start) {
+					string += currentChar();
+					jumpChar();
+					start = false;
+				} else if (currentChar() == '"') {
+					limpLog("inf", "got here");
+					string += currentChar();
+					keepRunning = false;
+				} else {
+					string += currentChar();
+					jumpChar();
+				}
+				start = false;
+			}
+			return string;
+		}
 
 	readNext();
 	function readNext() {
-		// console.log("pos"+pos);
+		limpLog("inf", `--- pos${pos} (${line}:${col})`);
 		if (endOfInput()) {
-			console.log("we dun bois");
-			return;
-		}
-		if ( isWhitespace(currentChar()) ) { // WHITESPACE
+			limpLog("inf", "---------------------------- script finished");
+		} else if ( isWhitespace(currentChar()) ) { // WHITESPACE
 			limpLog("inf", "[whitespace]");
 			if (currentChar() == "\n") {
 				line++;
 			}
 			jumpChar();
 			readNext();
-		} else if (currentChar() == "/" && !currentCharIsEscaped() ) { // COMMENT
+		} else if (currentChar() == "/" && currentChar(1) == "/" && !currentCharIsEscaped() ) { // COMMENT
 			limpLog("inf", "[comment]");
 			jumpLine();
 			readNext();
 		} else if (currentChar() == '"' && !currentCharIsEscaped() ) { // STRING
-			limpLog("inf", readString())
+			limpLog("inf", readString());
 			jumpChar();
 			readNext();
-		} else if ( isDigit(currentChar()) ) { // DIGIT
-			limpLog("inf", readNumber())
+		} else if ( isDigit(currentChar()) ) { // NUMBER
+			limpLog("inf", readNumber());
 			jumpChar();
 			readNext();
-		} else if ( isOperator(currentChar) && !currentCharIsEscaped() ) { // OPERATOR
-			limpLog("inf", readOperator())
+		} else if ( isOperator(currentChar()) ) { // OPERATOR
+			limpLog("inf", "Operator - ToDo");
 			jumpChar();
 			readNext();
+		} else if ( isLetter(currentChar()) ) {
+			limpLog("inf", "Letter - ToDo");
+			jumpChar();
+			readNext();
+		} else if ( currentChar() == "$" ) {
+			limpLog("inf", "Variable - ToDo");
+			jumpChar();
+			readNext();
+		} else {
+			limpLog("err", `Didn't understand character "${currentChar()}" at ${line}:${col} | ${pos}`);
 		}
 	}
 }
