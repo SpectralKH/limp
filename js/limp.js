@@ -15,26 +15,53 @@ function limpLog(type, msg) {
 	if (type == "err") {
 		console.error("[limp] "+msg);
 	} else if (type == "inf") {
-		// console.log("[limp] "+msg);
+		console.log("[limp] "+msg);
 	}
 }
 
+
+
+// 3*x+y
+// ast = [
+// 	{
+// 		type: "binexp",
+// 		operator: "+",
+// 		left: {
+// 			type: "binexp",
+// 			operator: "*",
+// 			left: {
+// 				type: "num",
+// 				value: 3
+// 			},
+// 			right: {
+// 				type: "var",
+// 				value: "x"
+// 			}
+// 		},
+// 		right: {
+// 			type: "var",
+// 			value: "y"
+// 		}
+// 	}
+// ]
+
+
 function limp(input) {
-	var pos = 0, line = 1, col = 1;
+	var pos = 0, line = 1, col = 1, stat = 0; // statement
 
 	// CHARACTER CHECK
 		function currentChar(offset = 0) {
 			return input.charAt(pos+offset);
 		}
-
 		function currentCharIsEscaped(offset = 0) {
 			return input.charAt(pos - 1 + offset) == "\\" ? true : false;
 			//  ToDo: Support \\\
 		}
 
-	function endOfInput() {
-		return pos >= input.length ? true : false;
-	}
+	// END?
+		function endOfInput() {
+			return pos >= input.length ? true : false;
+		}
 
 	// INPUT NAVIGATION
 
@@ -42,12 +69,10 @@ function limp(input) {
 			var lastNewline = input.lastIndexOf("\n", pos-1);
 			col = pos-lastNewline;
 		}
-
 		function jumpChar(offset = 1) {
 			pos = pos+offset;
 			updateCol();
 		}
-
 		function jumpLine() {
 			var nextNewline = input.indexOf("\n", pos);
 			pos = nextNewline+1;
@@ -57,35 +82,46 @@ function limp(input) {
 
 	// TYPE CHECK
 
-		function isWhitespace(char) {
+		function isWhitespace(char = currentChar()) {
 			return /\s/.test(char);
 		}
-
-		function isDigit(char) {
+		function currentCharIsComment() {
+			return currentChar() == "/" && currentChar(1) == "/" && !currentCharIsEscaped() ? true : false;
+		}
+		function currentCharIsString() {
+			return currentChar() == '"' && !currentCharIsEscaped()
+		}
+		function isDigit(char = currentChar()) {
 			return /[0-9]/.test(char);
 		}
-
-		function isOperator(char) {
-			switch (char) {
-				case "+":
-				case "-":
-				case "*":
-				case "/":
-				case "%":
-				case "++":
-				case "--":
-					return true;
-					break;
-				default:
-					return false;
-			}
+		function isPunctation(char = currentChar()) {
+			return ";".indexOf(char) >= 0;
 		}
-
-		function isLetter(char) {
-			return /[A-Za-z]/.test(char);
+		function isOperator(char = currentChar()) {
+			return "+-*/%.=<>&|!".indexOf(char) >= 0;
 		}
+		// (keyword/letter)
+		// (boolean)
 
 	// TYPE READ
+
+		// (whitespace)
+		// (comment)
+		function readString() {
+			var keepRunning = true, string = currentChar();
+			jumpChar();
+			while (keepRunning == true && !endOfInput()) {
+				if (currentChar() == '"') {
+					limpLog("inf", "got here");
+					string += currentChar();
+					keepRunning = false;
+				} else {
+					string += currentChar();
+					jumpChar();
+				}
+			}
+			return eval(string);
+		}
 		function readNumber() {
 			var keepRunning = true, firstPeriod = true, number = "";
 			while (keepRunning == true && !endOfInput()) {
@@ -105,65 +141,80 @@ function limp(input) {
 			}
 			return number;
 		}
-
-		function readString() {
-			var keepRunning = true, string = "", start = true;
-			while (keepRunning == true && !endOfInput()) {
-				if (start) {
-					string += currentChar();
-					jumpChar();
-					start = false;
-				} else if (currentChar() == '"') {
-					limpLog("inf", "got here");
-					string += currentChar();
-					keepRunning = false;
-				} else {
-					string += currentChar();
-					jumpChar();
-				}
-				start = false;
+		function readPunctation() {
+			if (currentChar() == ";") {
+				stat++;
 			}
-			return string;
+			return currentChar();
 		}
+		function readOperator() {
+			var operator = currentChar();
+			if (currentChar() == "+" && currentChar(1) == "+") operator = "++", jumpChar();
+			if (currentChar() == "-" && currentChar(1) == "-") operator = "--", jumpChar();
+			return operator;
+		}
+		function readKeyword() {
+			var keepRunning = true, keyword = currentChar();
+			jumpChar();
+			while (keepRunning == true && !endOfInput()) {
+				if ( /[A-Za-z0-9_]/.test(currentChar()) ) {
+					keyword += currentChar();
+					jumpChar();
+				} else {
+					keepRunning = false;
+					jumpChar(-1);
+				}
+			}
+			return keyword;
+		}
+		// (boolean)
 
+
+	var ast = []; // parseInputPosition
 	readNext();
 	function readNext() {
-		limpLog("inf", `--- pos${pos} (${line}:${col})`);
+		// limpLog("inf", `--- pos${pos} (${line}:${col})`);
+		var value = "";
 		if (endOfInput()) {
 			limpLog("inf", "---------------------------- script finished");
-		} else if ( isWhitespace(currentChar()) ) { // WHITESPACE
-			limpLog("inf", "[whitespace]");
-			if (currentChar() == "\n") {
-				line++;
-			}
+			// parse();
+			console.log(ast);
+		} else if ( isWhitespace() ) { 											// WHITESPACE
+			value = "[whitespace]";
+			if (currentChar() == "\n") line++;
 			jumpChar();
-			readNext();
-		} else if (currentChar() == "/" && currentChar(1) == "/" && !currentCharIsEscaped() ) { // COMMENT
-			limpLog("inf", "[comment]");
+		} else if (currentCharIsComment()) { 									// COMMENT
+			value = "[comment]";
 			jumpLine();
-			readNext();
-		} else if (currentChar() == '"' && !currentCharIsEscaped() ) { // STRING
-			limpLog("inf", readString());
-			jumpChar();
-			readNext();
-		} else if ( isDigit(currentChar()) ) { // NUMBER
-			limpLog("inf", readNumber());
-			jumpChar();
-			readNext();
-		} else if ( isOperator(currentChar()) ) { // OPERATOR
-			limpLog("inf", "Operator - ToDo");
-			jumpChar();
-			readNext();
-		} else if ( isLetter(currentChar()) ) {
-			limpLog("inf", "Letter - ToDo");
-			jumpChar();
-			readNext();
-		} else if ( currentChar() == "$" ) {
-			limpLog("inf", "Variable - ToDo");
-			jumpChar();
-			readNext();
+			jumpChar(-1);
+		} else if ( currentCharIsString() ) { 									// STRING
+			value = readString();
+			ast[pipos] = {type: "string", value: value};
+		} else if ( isDigit() ) { 												// NUMBER
+			value = readNumber();
+			ast[pipos] = {type: "number", value: eval(value)};
+		} else if ( isPunctation() ) {											// PUNCTATION
+			value = readPunctation();
+			ast[pipos] = {type: "operator", value: value};
+		} else if ( isOperator() ) { 											// OPERATOR
+			value = readOperator();
+			ast[pipos] = {type: "operator", value: value};
+		} else if ( /[A-Za-z_]/.test(currentChar()) ) { 						// KEYWORD
+			value = readKeyword();
+			if (value == "true" || value == "false") {								// BOOLEAN
+				value = eval(value);
+				ast[pipos] = {type: "boolean", value: value};
+			} else {
+				ast[pipos] = {type: "keyword", value: value};
+			}
 		} else {
-			limpLog("err", `Didn't understand character "${currentChar()}" at ${line}:${col} | ${pos}`);
+			limpLog("err", `Didn't understand character "${currentChar()}" at ${line}:${col}`);
+		}
+		if (value != "") {
+			// limpLog("inf", value);
+			jumpChar();
+			if (value != "[whitespace]" && value != "[comment]") pipos++;
+			readNext();
 		}
 	}
 }
