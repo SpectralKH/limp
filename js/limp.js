@@ -43,12 +43,13 @@ var astttttt = [
 			value: "y"
 		}
 	}
-]
+];
 
 function limp(input) {
-	var pos = 0, line = 1, col = 1, stat = 0; // statement
+	var pos = 0, line = 1, col = 1; // statement
 
 	// CHARACTER CHECK
+
 		function currentChar(offset = 0) {
 			return input.charAt(pos+offset);
 		}
@@ -58,6 +59,7 @@ function limp(input) {
 		}
 
 	// END?
+
 		function endOfInput() {
 			return pos >= input.length ? true : false;
 		}
@@ -166,16 +168,22 @@ function limp(input) {
 		// (boolean)
 
 	// LEXER
+
+		var stat = 0;
 		var tokens = [];
+		tokens[stat] = [];
+		// var tokens = [];
 		var ast = [] // parseInputPosition
 		readNext();
 		function readNext() {
 			// limpLog("inf", `--- pos${pos} (${line}:${col})`);
 			var value = "";
+			var currentStat = tokens[stat];
 			if (endOfInput()) {
 				limpLog("inf", "---------------------------- script finished");
 				parse();
 				console.log(tokens);
+				limpLog("inf", JSON.stringify(tokens, null, 4));
 			} else if ( isWhitespace() ) { 											// WHITESPACE
 				value = "[whitespace]";
 				if (currentChar() == "\n") line++;
@@ -185,24 +193,34 @@ function limp(input) {
 				jumpChar(-1);
 			} else if ( currentCharIsString() ) { 									// STRING
 				value = {type: "string", value: readString()};
-				tokens.push(value);
+				tokens[stat].push(value);
 			} else if ( isDigit() ) { 												// NUMBER
 				value = {type: "number", value: readNumber()};
-				tokens.push(value);
+				tokens[stat].push(value);
 			} else if ( isPunctation() ) {											// PUNCTATION
 				value = {type: "punctation", value: currentChar()};
-				tokens.push(value);
+				tokens[stat].push(value);
+				if (currentChar() == ";") {
+					stat++;
+					tokens[stat] = [];
+				}
 			} else if ( isOperator() ) { 											// OPERATOR
 				value = {type: "operator", value: readOperator()};
-				tokens.push(value);
+				tokens[stat].push(value);
 			} else if ( /[A-Za-z_]/.test(currentChar()) ) { 						// KEYWORD
 				value = readKeyword();
-				if (value == "true" || value == "false") {								// BOOLEAN
-					value = {type: "boolean", value: value};
-				} else {
-					value = {type: "keyword", value: value};
+				switch (value) {
+					case "true":
+					case "false":
+						value = {type: "boolean", value: value};
+						break;
+					case "function":
+						value = {type: "function", value: "whatever"};
+						break;
+					default:
+						value = {type: "variable", value: value};
 				}
-				tokens.push(value);
+				tokens[stat].push(value);
 			} else {
 				limpLog("err", `Didn't understand character "${currentChar()}" at ${line}:${col}`);
 			}
@@ -218,9 +236,7 @@ function limp(input) {
 		// (whitespace)
 		// (comment)
 		// (string)
-		function parseNumber() {
-
-		}
+		// (number)
 		// (punctation)
 		// (operator)
 		// (keyword)
@@ -228,6 +244,8 @@ function limp(input) {
 
 	// PARSE
 		function parse() {
-
+			for (var tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
+				var currentStat = tokens[tokenIndex];
+			}
 		}
 }
