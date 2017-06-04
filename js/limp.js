@@ -22,29 +22,28 @@ function limpLog(type, msg) {
 
 
 // 3*x+y
-// ast = [
-// 	{
-// 		type: "binexp",
-// 		operator: "+",
-// 		left: {
-// 			type: "binexp",
-// 			operator: "*",
-// 			left: {
-// 				type: "num",
-// 				value: 3
-// 			},
-// 			right: {
-// 				type: "var",
-// 				value: "x"
-// 			}
-// 		},
-// 		right: {
-// 			type: "var",
-// 			value: "y"
-// 		}
-// 	}
-// ]
-
+var astttttt = [
+	{
+		type: "binexp",
+		operator: "+",
+		left: {
+			type: "binexp",
+			operator: "*",
+			left: {
+				type: "num",
+				value: 3
+			},
+			right: {
+				type: "var",
+				value: "x"
+			}
+		},
+		right: {
+			type: "var",
+			value: "y"
+		}
+	}
+]
 
 function limp(input) {
 	var pos = 0, line = 1, col = 1, stat = 0; // statement
@@ -139,14 +138,9 @@ function limp(input) {
 					jumpChar(-1);
 				}
 			}
-			return number;
+			return eval(number);
 		}
-		function readPunctation() {
-			if (currentChar() == ";") {
-				stat++;
-			}
-			return currentChar();
-		}
+		// (punctation)
 		function readOperator() {
 			var operator = currentChar();
 			if (currentChar() == "+" && currentChar(1) == "+") operator = "++", jumpChar();
@@ -165,56 +159,75 @@ function limp(input) {
 					jumpChar(-1);
 				}
 			}
+			if (keyword == "true") keyword = true;
+			if (keyword == false) keyword = false;
 			return keyword;
 		}
 		// (boolean)
 
-
-	var ast = []; // parseInputPosition
-	readNext();
-	function readNext() {
-		// limpLog("inf", `--- pos${pos} (${line}:${col})`);
-		var value = "";
-		if (endOfInput()) {
-			limpLog("inf", "---------------------------- script finished");
-			// parse();
-			console.log(ast);
-		} else if ( isWhitespace() ) { 											// WHITESPACE
-			value = "[whitespace]";
-			if (currentChar() == "\n") line++;
-			jumpChar();
-		} else if (currentCharIsComment()) { 									// COMMENT
-			value = "[comment]";
-			jumpLine();
-			jumpChar(-1);
-		} else if ( currentCharIsString() ) { 									// STRING
-			value = readString();
-			ast[pipos] = {type: "string", value: value};
-		} else if ( isDigit() ) { 												// NUMBER
-			value = readNumber();
-			ast[pipos] = {type: "number", value: eval(value)};
-		} else if ( isPunctation() ) {											// PUNCTATION
-			value = readPunctation();
-			ast[pipos] = {type: "operator", value: value};
-		} else if ( isOperator() ) { 											// OPERATOR
-			value = readOperator();
-			ast[pipos] = {type: "operator", value: value};
-		} else if ( /[A-Za-z_]/.test(currentChar()) ) { 						// KEYWORD
-			value = readKeyword();
-			if (value == "true" || value == "false") {								// BOOLEAN
-				value = eval(value);
-				ast[pipos] = {type: "boolean", value: value};
+	// LEXER
+		var tokens = [];
+		var ast = [] // parseInputPosition
+		readNext();
+		function readNext() {
+			// limpLog("inf", `--- pos${pos} (${line}:${col})`);
+			var value = "";
+			if (endOfInput()) {
+				limpLog("inf", "---------------------------- script finished");
+				parse();
+				console.log(tokens);
+			} else if ( isWhitespace() ) { 											// WHITESPACE
+				value = "[whitespace]";
+				if (currentChar() == "\n") line++;
+			} else if (currentCharIsComment()) { 									// COMMENT
+				value = "[comment]";
+				jumpLine();
+				jumpChar(-1);
+			} else if ( currentCharIsString() ) { 									// STRING
+				value = {type: "string", value: readString()};
+				tokens.push(value);
+			} else if ( isDigit() ) { 												// NUMBER
+				value = {type: "number", value: readNumber()};
+				tokens.push(value);
+			} else if ( isPunctation() ) {											// PUNCTATION
+				value = {type: "punctation", value: currentChar()};
+				tokens.push(value);
+			} else if ( isOperator() ) { 											// OPERATOR
+				value = {type: "operator", value: readOperator()};
+				tokens.push(value);
+			} else if ( /[A-Za-z_]/.test(currentChar()) ) { 						// KEYWORD
+				value = readKeyword();
+				if (value == "true" || value == "false") {								// BOOLEAN
+					value = {type: "boolean", value: value};
+				} else {
+					value = {type: "keyword", value: value};
+				}
+				tokens.push(value);
 			} else {
-				ast[pipos] = {type: "keyword", value: value};
+				limpLog("err", `Didn't understand character "${currentChar()}" at ${line}:${col}`);
 			}
-		} else {
-			limpLog("err", `Didn't understand character "${currentChar()}" at ${line}:${col}`);
+			if (value != "") {
+				// limpLog("inf", value);
+				jumpChar();
+				// if (value != "[whitespace]" && value != "[comment]") pipos++;
+				readNext();
+			}
 		}
-		if (value != "") {
-			// limpLog("inf", value);
-			jumpChar();
-			if (value != "[whitespace]" && value != "[comment]") pipos++;
-			readNext();
+
+	// TYPE PARSE
+		// (whitespace)
+		// (comment)
+		// (string)
+		function parseNumber() {
+
 		}
-	}
+		// (punctation)
+		// (operator)
+		// (keyword)
+		// (boolean)
+
+	// PARSE
+		function parse() {
+
+		}
 }
