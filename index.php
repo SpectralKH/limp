@@ -32,8 +32,12 @@
 					$(".limp--input textarea").trigger("input");
 				}
 			});
+			$("body").on("click", ".limp--log-clear", function() {
+				document.getElementsByClassName("limp--log")[0].innerHTML = "";
+			});
 			</script>
 			<textarea placeholder="Run limp" rows="1" class="limp--input-limp"></textarea>
+			<div class="limp--log-clear"></div>
 			<textarea placeholder="Run JavaScript" rows="1" class="limp--input-js"></textarea>
 		</div>
 		<script src="js/limp.js?r=<?=rand(0,999)?>"></script>

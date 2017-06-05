@@ -19,6 +19,7 @@ body
 	tab-size: 4
 	.limp--item
 		$margin: 20px
+		padding-left: 30px
 		font-size: 14px
 		font-family: monospace
 		margin-left: $margin
@@ -32,13 +33,19 @@ body
 			border-radius: 2px
 			padding: 2px
 			margin: 2px
+			position: absolute
 		.limp--label-err
 			background-color: $red
 		.limp--label-inf
 			background-color: $bg-6
+			transform: translateX(-100%)
 		.limp--msg
 			margin: 0px
+			padding-top: 4px
+			padding-bottom: 4px
+			padding-left: 15px
 			display: inline
+			display: inline-block
 			white-space: pre-wrap
 
 .limp--input
@@ -69,5 +76,18 @@ body
 			box-shadow: $shadow-4
 	.limp--input-limp
 		margin-left: 40px
+	.limp--log-clear
+		min-width: 36px
+		cursor: pointer
+		box-shadow: $shadow-3
+		background-color: $bg-4
+		background-image: url("/close-48.png")
+		background-size: 28px
+		background-position: center
+		background-repeat: no-repeat
+		transition: background-color $transition, box-shadow $transition
+		&:focus, &:active
+			background-color: $bg-5
+			box-shadow: $shadow-4
 	.limp--input-js
 		margin-right: 40px
