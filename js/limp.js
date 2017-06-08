@@ -100,7 +100,8 @@ function limp(input) {
 			return ";".indexOf(char) >= 0;
 		}
 		function isOperator(char = currentChar()) {
-			return "+-*/%.=<>&|!".indexOf(char) >= 0;
+			// return "+-*/%.=<>&|!".indexOf(char) >= 0;
+			return "+-*/%=".indexOf(char) >= 0;
 		}
 		// (keyword/letter)
 		// (boolean)
@@ -146,9 +147,14 @@ function limp(input) {
 		// (punctation)
 		function readOperator() {
 			var operator = currentChar();
-			if (currentChar() == "+" && currentChar(1) == "+") operator = "++", jumpChar();
-			if (currentChar() == "-" && currentChar(1) == "-") operator = "--", jumpChar();
-			return operator;
+			// if (currentChar() == "+" && currentChar(1) == "+") operator = "++", jumpChar();
+			// if (currentChar() == "-" && currentChar(1) == "-") operator = "--", jumpChar();
+			if ("+-*/%".indexOf(operator) >= 0) {
+				var subType = "arithmetic"
+			} else if ("=".indexOf(operator) >= 0) {
+				var subType = "assignment";
+			}
+			return {type: "operator", value: operator, subType: subType};
 		}
 		function readKeyword() {
 			var keepRunning = true, keyword = currentChar();
@@ -206,8 +212,8 @@ function limp(input) {
 					tokens[stat] = [];
 				}
 			} else if ( isOperator() ) { 											// OPERATOR
-				value = {type: "operator", value: readOperator()};
-				tokens[stat].push(value);
+				value = readOperator();
+				statements[stat].push(value);
 			} else if ( /[A-Za-z_]/.test(currentChar()) ) { 						// KEYWORD
 				value = readKeyword();
 				switch (value) {
