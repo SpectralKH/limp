@@ -1,7 +1,4 @@
 "use strict";
-// var limpErrors = {
-// 	"u01": "Invalid JavaScript data type passed to limp(). Expected string."
-// }
 
 function limpLog(type, msg) {
 	if (typeof msg == "object") msg = JSON.stringify(msg, null, 4);
@@ -19,32 +16,6 @@ function limpLog(type, msg) {
 		// console.log("[limp] "+msg);
 	}
 }
-
-
-
-// 3*x+y
-var astttttt = [
-	{
-		type: "binexp",
-		operator: "+",
-		left: {
-			type: "binexp",
-			operator: "*",
-			left: {
-				type: "num",
-				value: 3
-			},
-			right: {
-				type: "var",
-				value: "x"
-			}
-		},
-		right: {
-			type: "var",
-			value: "y"
-		}
-	}
-];
 
 function limp(input) {
 	var pos = 0, line = 1, col = 1; // statement
@@ -262,6 +233,7 @@ function limp(input) {
 						token.left = ast[si][ti-1];
 						token.right = ast[si][ti+1];
 						ast[si].splice(ti-1, 3, token);
+						ti--;
 					}
 				}
 			}
