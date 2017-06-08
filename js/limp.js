@@ -4,6 +4,7 @@
 // }
 
 function limpLog(type, msg) {
+	if (typeof msg == "object") msg = JSON.stringify(msg, null, 4);
 	var html = document.createElement("div");
 	var attr = document.createAttribute("class");
 	attr.value = "limp--item";
@@ -183,7 +184,7 @@ function limp(input) {
 				limpLog("inf", "---------------------------- script finished");
 				parse();
 				console.log(tokens);
-				limpLog("inf", JSON.stringify(tokens, null, 4));
+				// limpLog("inf", statements);
 			} else if ( isWhitespace() ) { 											// WHITESPACE
 				value = "[whitespace]";
 				if (currentChar() == "\n") line++;
