@@ -41,6 +41,6 @@
 			<textarea placeholder="Run JavaScript" rows="1" class="limp--input-js"></textarea>
 		</div>
 		<script src="js/limp.js?r=<?=rand(0,999)?>"></script>
-		<script src="js/script.limp?r=<?=rand(0,999)?>"></script>
+		<script src="js/script.limp?r=<?=rand(0,999999)?>"></script>
 	</body>
 </html>
