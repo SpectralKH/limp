@@ -16,7 +16,7 @@ function limpLog(type, msg) {
 	if (type == "err") {
 		console.error("[limp] "+msg);
 	} else if (type == "inf") {
-		console.log("[limp] "+msg);
+		// console.log("[limp] "+msg);
 	}
 }
 
@@ -177,19 +177,18 @@ function limp(input) {
 	// LEXER
 
 		var stat = 0;
-		var tokens = [];
-		tokens[stat] = [];
-		// var tokens = [];
+		var statements = [];
+		statements[stat] = [];
 		var ast = [] // parseInputPosition
+
 		readNext();
 		function readNext() {
 			// limpLog("inf", `--- pos${pos} (${line}:${col})`);
 			var value = "";
-			var currentStat = tokens[stat];
+			var currentStat = statements[stat];
 			if (endOfInput()) {
-				limpLog("inf", "---------------------------- script finished");
+				// limpLog("inf", "---------------------------- script finished");
 				parse();
-				console.log(tokens);
 				// limpLog("inf", statements);
 			} else if ( isWhitespace() ) { 											// WHITESPACE
 				value = "[whitespace]";
@@ -200,16 +199,16 @@ function limp(input) {
 				jumpChar(-1);
 			} else if ( currentCharIsString() ) { 									// STRING
 				value = {type: "string", value: readString()};
-				tokens[stat].push(value);
+				statements[stat].push(value);
 			} else if ( isDigit() ) { 												// NUMBER
 				value = {type: "number", value: readNumber()};
-				tokens[stat].push(value);
+				statements[stat].push(value);
 			} else if ( isPunctation() ) {											// PUNCTATION
 				value = {type: "punctation", value: currentChar()};
-				tokens[stat].push(value);
+				// statements[stat].push(value);
 				if (currentChar() == ";") {
 					stat++;
-					tokens[stat] = [];
+					statements[stat] = [];
 				}
 			} else if ( isOperator() ) { 											// OPERATOR
 				value = readOperator();
@@ -227,8 +226,9 @@ function limp(input) {
 					default:
 						value = {type: "variable", value: value};
 				}
-				tokens[stat].push(value);
+				statements[stat].push(value);
 			} else {
+				console.log(currentChar());
 				limpLog("err", `Didn't understand character "${currentChar()}" at ${line}:${col}`);
 			}
 			if (value != "") {
@@ -251,8 +251,20 @@ function limp(input) {
 
 	// PARSE
 		function parse() {
-			for (var tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
-				var currentStat = tokens[tokenIndex];
+
+
+			var ast = statements;
+			// loop through statements & tokens
+			for (var si = 0; si < ast.length; si++) { // statement index
+				for (var ti = 0; ti < ast[si].length; ti++) { // token index
+					var token = ast[si][ti];
+					if (token.type == "operator") {
+						token.left = ast[si][ti-1];
+						token.right = ast[si][ti+1];
+						ast[si].splice(ti-1, 3, token);
+					}
+				}
 			}
+			limpLog("inf", ast);
 		}
 }
