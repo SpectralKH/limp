@@ -1,3 +1,11 @@
+// First readNext() goes through the script, performing character/type checks;
+// For instance, isDigit(). After finding out the type, we read the type;
+// readNumber(). readNumber() returns an object with info such as type and
+// value. These objects are put into the statements array, which is later
+// processed by the parser. The parser loops through the statements array,
+// forming the AST, a tree/network object representing the script.
+
+
 "use strict";
 
 function limpLog(type, msg) {
@@ -16,7 +24,7 @@ function limpLog(type, msg) {
 		// console.log("[limp] "+msg);
 	}
 }
-
+var temp = [];
 function limp(input) {
 	var pos = 0, line = 1, col = 1; // statement
 
@@ -121,11 +129,11 @@ function limp(input) {
 			// if (currentChar() == "+" && currentChar(1) == "+") operator = "++", jumpChar();
 			// if (currentChar() == "-" && currentChar(1) == "-") operator = "--", jumpChar();
 			if ("+-*/%".indexOf(operator) >= 0) {
-				var subType = "arithmetic"
+				var type = "arithmetic"
 			} else if ("=".indexOf(operator) >= 0) {
-				var subType = "assignment";
+				var type = "assignment";
 			}
-			return {type: "operator", value: operator, subType: subType};
+			return {type: type, operator: operator};
 		}
 		function readKeyword() {
 			var keepRunning = true, keyword = currentChar();
@@ -225,18 +233,29 @@ function limp(input) {
 
 
 			var ast = statements;
-			// loop through statements & tokens
-			for (var si = 0; si < ast.length; si++) { // statement index
-				for (var ti = 0; ti < ast[si].length; ti++) { // token index
-					var token = ast[si][ti];
-					if (token.type == "operator") {
-						token.left = ast[si][ti-1];
-						token.right = ast[si][ti+1];
-						ast[si].splice(ti-1, 3, token);
+			function parseTokensArray(tokens) {
+				for (var ti = 0; ti < tokens.length; ti++) {
+					var token = tokens[ti];
+					if (token.type == "arithmetic") {
+						token.left = tokens[ti-1];
+						token.right = tokens[ti+1];
+						tokens.splice(ti-1, 3, token);
+						ti--;
+					} else if (token.type == "assignment") {
+						token.left = tokens[ti-1];
+						token.right = ast[si].splice(ti+1);
+						parseTokensArray(token.right);
+						token.right = token.right[0];
+						tokens.splice(ti-1, 3, token);
 						ti--;
 					}
 				}
 			}
+			// loop through statements & tokens
+			for (var si = 0; si < ast.length; si++) { // statement index
+				parseTokensArray(ast[si]);
+			}
 			limpLog("inf", ast);
+			temp = ast;
 		}
 }
