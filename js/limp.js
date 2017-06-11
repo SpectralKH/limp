@@ -76,7 +76,7 @@ function limp(input) {
 			return /[0-9]/.test(char);
 		}
 		function isPunctation(char = currentChar()) {
-			return ";".indexOf(char) >= 0;
+			return ";()".indexOf(char) >= 0;
 		}
 		function isOperator(char = currentChar()) {
 			// return "+-*/%.=<>&|!".indexOf(char) >= 0;
@@ -148,7 +148,7 @@ function limp(input) {
 				}
 			}
 			if (keyword == "true") keyword = true;
-			if (keyword == false) keyword = false;
+			if (keyword == "false") keyword = false;
 			return keyword;
 		}
 		// (boolean)
@@ -156,6 +156,7 @@ function limp(input) {
 	// LEXER
 
 		var stat = 0;
+		// Statement format: statements[statementIndex].property
 		var statements = [];
 		statements[stat] = [];
 		var ast = [] // parseInputPosition
@@ -184,10 +185,11 @@ function limp(input) {
 				statements[stat].push(value);
 			} else if ( isPunctation() ) {											// PUNCTATION
 				value = {type: "punctation", value: currentChar()};
-				// statements[stat].push(value);
 				if (currentChar() == ";") {
 					stat++;
 					statements[stat] = [];
+				} else {
+					statements[stat].push(value);
 				}
 			} else if ( isOperator() ) { 											// OPERATOR
 				value = readOperator();
@@ -195,11 +197,11 @@ function limp(input) {
 			} else if ( /[A-Za-z_]/.test(currentChar()) ) { 						// KEYWORD
 				value = readKeyword();
 				switch (value) {
-					case "true":
-					case "false":
+					case true:
+					case false:
 						value = {type: "boolean", value: value};
 						break;
-					case "function":
+					case "fn":
 						value = {type: "function", value: "whatever"};
 						break;
 					default:
@@ -218,42 +220,56 @@ function limp(input) {
 			}
 		}
 
-	// TYPE PARSE
-		// (whitespace)
-		// (comment)
-		// (string)
-		// (number)
-		// (punctation)
-		// (operator)
-		// (keyword)
-		// (boolean)
-
 	// PARSE
 		function parse() {
 
 
 			var ast = statements;
+			function delimit(startIndex, startToken, endToken, separatorToken, inputArr) {
+				var parenCount = 0;
+				for (var i = startIndex; ; i++) {
+					if (inputArr[i].value == "(") {
+						parenCount++;
+					} else if (inputArr[i].value == ")") {
+						if (parenCount == 1) {
+							var endIndex = i;
+							break;
+						} else {
+							parenCount--;
+						}
+					}
+				}
+				return [startIndex, endIndex];
+			}
 			function parseTokensArray(tokens) {
 				for (var ti = 0; ti < tokens.length; ti++) {
 					var token = tokens[ti];
-					if (token.type == "arithmetic") {
+					if (token.type == "arithmetic") {								// ARITHMETICS
 						token.left = tokens[ti-1];
 						token.right = tokens[ti+1];
 						tokens.splice(ti-1, 3, token);
 						ti--;
-					} else if (token.type == "assignment") {
+					} else if (token.type == "assignment") { 						// ASSIGNMENTS
 						token.left = tokens[ti-1];
 						token.right = ast[si].splice(ti+1);
-						parseTokensArray(token.right);
-						token.right = token.right[0];
+						token.right = parseTokensArray(token.right);
 						tokens.splice(ti-1, 3, token);
 						ti--;
+					} else if (token.value == "(") { 								// PARENTHESES
+						var delimited = delimit(ti, "(", ")", "", tokens);
+						var startIndex = delimited[0];
+						var endIndex = delimited[1];
+						var body = tokens.slice(startIndex+1, endIndex);
+						body = parseTokensArray(body);
+						token[startIndex] = {type: "priority", body: body};
+						tokens.splice(startIndex, endIndex+1-startIndex, token[startIndex]);
 					}
 				}
+				return tokens[0];
 			}
 			// loop through statements & tokens
 			for (var si = 0; si < ast.length; si++) { // statement index
-				parseTokensArray(ast[si]);
+				ast[si] = parseTokensArray(ast[si]);
 			}
 			limpLog("inf", ast);
 			temp = ast;
