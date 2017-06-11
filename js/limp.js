@@ -76,19 +76,15 @@ function limp(input) {
 			return /[0-9]/.test(char);
 		}
 		function isPunctation(char = currentChar()) {
-			return ";()".indexOf(char) >= 0;
+			return ";(){}".indexOf(char) >= 0;
 		}
 		function isOperator(char = currentChar()) {
 			// return "+-*/%.=<>&|!".indexOf(char) >= 0;
 			return "+-*/%=".indexOf(char) >= 0;
 		}
-		// (keyword/letter)
-		// (boolean)
 
 	// TYPE READ
 
-		// (whitespace)
-		// (comment)
 		function readString() {
 			var keepRunning = true, string = currentChar();
 			jumpChar();
@@ -123,7 +119,6 @@ function limp(input) {
 			}
 			return eval(number);
 		}
-		// (punctation)
 		function readOperator() {
 			var operator = currentChar();
 			// if (currentChar() == "+" && currentChar(1) == "+") operator = "++", jumpChar();
@@ -151,7 +146,6 @@ function limp(input) {
 			if (keyword == "false") keyword = false;
 			return keyword;
 		}
-		// (boolean)
 
 	// LEXER
 
@@ -252,7 +246,7 @@ function limp(input) {
 					} else if (token.type == "assignment") { 						// ASSIGNMENTS
 						token.left = tokens[ti-1];
 						token.right = ast[si].splice(ti+1);
-						token.right = parseTokensArray(token.right);
+						parseTokensArray(token.right);
 						tokens.splice(ti-1, 3, token);
 						ti--;
 					} else if (token.value == "(") { 								// PARENTHESES
@@ -260,16 +254,16 @@ function limp(input) {
 						var startIndex = delimited[0];
 						var endIndex = delimited[1];
 						var body = tokens.slice(startIndex+1, endIndex);
-						body = parseTokensArray(body);
+						parseTokensArray(body);
 						token[startIndex] = {type: "priority", body: body};
 						tokens.splice(startIndex, endIndex+1-startIndex, token[startIndex]);
 					}
 				}
-				return tokens[0];
+				// return tokens[0];
 			}
 			// loop through statements & tokens
 			for (var si = 0; si < ast.length; si++) { // statement index
-				ast[si] = parseTokensArray(ast[si]);
+				parseTokensArray(ast[si]);
 			}
 			limpLog("inf", ast);
 			temp = ast;
